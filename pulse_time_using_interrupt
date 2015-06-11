@@ -1,0 +1,38 @@
+#include <eRCaGuy_Timer2_Counter.h>
+
+volatile unsigned long timer_start;
+volatile unsigned long pulse_time;
+void calcsignal()//calcSignal is the interrupt handler
+{
+//if the pin has gone HIGH, record the microseconds since the Arduino started up
+ if(digitalRead(3) == HIGH)
+    {
+        timer_start =timer2.get_micros();
+    }
+//otherwise, the pin has gone LOW
+    else
+    {
+        //only worry about this if the timer has actually started
+        if(timer_start > 0)
+        {
+            //record the pulse time
+            pulse_time = ((volatile unsigned long)timer2.get_micros() - timer_start);
+            //restart the timer
+            timer_start = 0;
+        }
+    }
+}
+
+void setup() {
+  // put your setup code here, to run once:
+  timer2.setup();
+timer_start = 0;
+    attachInterrupt(1, calcsignal, CHANGE);
+    Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+Serial.println(pulse_time);
+    delay(20);
+}
